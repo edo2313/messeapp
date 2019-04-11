@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'loginRegistro.dart';
-import 'orari.dart';
+import 'package:messeapp/orari/orari.dart';
 
 void main(){
-  // test temporaneo
-  //LoginRegistro.makeLogin('aaa', 'bbb');
-  Orari.loadLinks();
-
   runApp(MyApp());
 }
 
@@ -59,7 +55,9 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (index){
       case 0:
         return buildLogin(context);
-        default:
+      case 2:
+        return Orari();
+      default:
         return Center(child: Text("PAGINA"),);
     }
   }
