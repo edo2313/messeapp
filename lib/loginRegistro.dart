@@ -5,23 +5,21 @@ import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' show parse;
 
 class LoginRegistro extends StatefulWidget{
+  static const String API_KEY = "Tg1NWEwNGIgIC0K";
 
-
+  /// funzione per prelevare il 'token' da utilizzare per mantenere la sessione
+  /// controllo di username e password
   static Future<String> makeLogin (BuildContext context, String username, String password) async {
-    Map<String, String> data = Map();
-    data["cid"]="";
-    data.putIfAbsent("uid", () => username);
-    data.putIfAbsent("pwd", () => password);
-    data["pin"]="";
-    data["target"]="";
-    int status=1;
+    Map<String, String> head = {
+      "Z-Dev-Apikey": API_KEY,
+      "Content-Type": "application/json",
+      "User-Agent": "CVVS/std/1.7.9 Android/6.0)"
+    };
+    String data = "{\"ident\":null,\"pass\":\"$password\",\"uid\":\"$username\"}";
+    http.Response r;
     try{
-      await http.get('https://web.spaggiari.eu');
-    }
-    catch(SocketException){
-      status = 0;
-    }
-    if (status==0){
+      r = await http.post('https://web.spaggiari.eu/rest/v1/auth/login', headers: head, body: data);
+    } catch(SocketException){
       Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text("Controlla la connessione ad internet"),
@@ -30,39 +28,39 @@ class LoginRegistro extends StatefulWidget{
       );
       return null;
     }
-    http.Response r = await http.post('https://web.spaggiari.eu/auth-p7/app/default/AuthApi4.php?a=aLoginPwd', body: data);
     var json = jsonDecode(r.body);
-    assert (json is Map);
-    bool logged = json.values.elementAt(1).values.elementAt(0).values.elementAt(1);
-    if (!logged) {
+
+    if (r.statusCode != 200) {
       Scaffold.of(context).showSnackBar(
+        SnackBar(content: Text(json["info"]))
+      );
+      return null;
+    }
+
+    Scaffold.of(context).showSnackBar(
         SnackBar(content: Text(
-            json.values.elementAt(1).values.elementAt(0).values.elementAt(4).toString()
+            'Benvenuto ${json["firstName"]} ${json["lastName"]}'
         ))
-      );
-      return null ;
-    }
-    else{
-      Scaffold.of(context).showSnackBar(
-          SnackBar(content: Text(
-              'Benvenuto ${json.values.elementAt(1).values.elementAt(0).values.elementAt(5).values.elementAt(3).toString()} ${json.values.elementAt(1).values.elementAt(0).values.elementAt(5).values.elementAt(2).toString()}'
-          ))
-      );
-    }
-
-    /*String setCookies = r.headers.values.elementAt(2);
-    print (setCookies);
-    set_cookies = set_cookies.substring(0, 42);*/
-    String setCookies = 'webrole=gen; webidentity=$username; ${r.headers.values.elementAt(2).substring(0, 42)}; weblogin=$username; LAST_REQUESTED_TARGET=cvv'; //TODO: Non funziona, bisogna capire come dargli in pasto la session
-    print (setCookies);
+    );
 
 
-    //test: not working
-    r = await http.get('', headers: {'Cookie': setCookies});
-    dom.Document doc = parse(r.body);
-    print (doc.children.elementAt(0).children.elementAt(1).children.elementAt(0).innerHtml);
+    String token = json["token"];
 
-    return setCookies;
+    /* esempio per le richieste successive (get non post)
+    head = {
+      "Z-Dev-Apikey": API_KEY,
+      "Content-Type": "application/json",
+      "User-Agent": "CVVS/std/1.7.9 Android/6.0)",
+      "Z-Auth-Token": token
+    };
+
+    //test: working!
+    r = await http.get('https://web.spaggiari.eu/rest/v1/students/${username.substring(1, username.length-1)}/cards', headers: head);
+    print (r.body);
+    json = jsonDecode(r.body);
+    */
+
+    return token;
   }
 
   @override
@@ -110,8 +108,11 @@ class RegistroState extends State<LoginRegistro> {
         minWidth: 200.0,
         height: 42.0,
         onPressed: () {
-          LoginRegistro.makeLogin(
-              context, unameController.text, pwordController.text);
+          Future<String> token = LoginRegistro.makeLogin(context, unameController.text, pwordController.text);
+          token.then((str) {
+            if (str == null) return;
+            //TODO: cambiare la schermata di login con quella dei voti/lezioni/agenda ecc
+          });
         },
         //color: Colors.lightGreen[900],
         child: Text("LOGIN", style: TextStyle(color: Colors.white,),),
