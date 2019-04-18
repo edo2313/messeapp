@@ -7,7 +7,7 @@ class Orari extends StatefulWidget{
   Future<Map<String, String>> loadLinks () async {
     Map<String,MapEntry<String, String>> classCode = Map();
     String currentyear =  (DateTime.now().year-1).toString()+'-'+DateTime.now().year.toString().substring(2,4); //Prende dinamicamente l'anno attuale per cambiare il link
-    http.Response r = await http.get('https://www.messedaglia.gov.it/images/stories/'+currentyear+'/orario/_ressource.js'); // il link non sarà sempre lo stesso
+    http.Response r = await http.get('https://www.messedaglia.gov.it/images/stories/$currentyear/orario/_ressource.js');
     if (r.statusCode != 200) return null;
     List<String> lines = r.body.split('\n');
     for (String str in lines){
@@ -18,14 +18,14 @@ class Orari extends StatefulWidget{
       classCode.putIfAbsent(split[2].substring(1,split[2].length-1), () => MapEntry(split[1].substring(1,split[1].length-1),""));
     }
     
-    r = await http.get('https://www.messedaglia.gov.it/images/stories/'+currentyear+'/orario/_periode.js');
+    r = await http.get('https://www.messedaglia.gov.it/images/stories/$currentyear/orario/_periode.js');
     if (r.statusCode != 200) return null;
     lines = r.body.split('\n');
     for (String str in lines){
       if (!str.startsWith("listePeriodes")) continue;
       str = str.substring(str.indexOf("(")+1, str.indexOf(")"));
       List<String> split = str.split(',');
-      classCode.update(split[0].substring(1,split[0].length-1), (e) => MapEntry(e.key, 'https://www.messedaglia.gov.it/images/stories/'+currentyear+'/orario/classi/${split[2].substring(1,split[2].length-1)}.png'));
+      classCode.update(split[0].substring(1,split[0].length-1), (e) => MapEntry(e.key, 'https://www.messedaglia.gov.it/images/stories/$currentyear/orario/classi/${split[2].substring(1,split[2].length-1)}.png'));
     }
     return Map<String,String>.fromEntries(classCode.values);
   }
@@ -47,7 +47,7 @@ class OrariState extends State<Orari> {
         orari = m;
         setState(() {});
       });
-      return Center(child: Text('loading...'),);  // provvisorio
+      return Center(child: new CircularProgressIndicator(),);  // provvisorio
     }
     DropdownButton<String> picker = DropdownButton( // TODO: cambiare lo stile
       value: cls,

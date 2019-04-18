@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'loginRegistro.dart';
-import 'package:messeapp/orari/orari.dart';
+import 'package:messeapp/loginRegistro.dart';
+import 'package:messeapp/orari.dart';
 
 void main(){
   runApp(MyApp());
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: MyHomePage(title: 'MESSEAPP'),
+      home: new Scaffold(body: new MyHomePage(title: 'MESSEAPP')),
     );
   }
 }
@@ -54,65 +54,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget buildBody (BuildContext context) {
     switch (index){
       case 0:
-        return buildLogin(context);
+        return LoginRegistro();
       case 2:
         return Orari();
       default:
         return Center(child: Text("PAGINA"),);
     }
   }
-  Widget buildLogin (BuildContext context) {
-    TextEditingController unameController = TextEditingController();
-    TextEditingController pwordController = TextEditingController();
-    TextFormField uname = TextFormField(
-      controller: unameController,
-      keyboardType: TextInputType.text,
-      autofocus: false,
-      decoration: InputDecoration(
-          hintText: "username",
-          contentPadding: EdgeInsets.all(10),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-          )
-      ),
-    );
-    TextFormField pword = TextFormField(
-      controller: pwordController,
-      keyboardType: TextInputType.text,
-      obscureText: true,
-      decoration: InputDecoration(
-          hintText: "password",
-          contentPadding: EdgeInsets.all(10),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30)
-          )
-      ),
-    );
 
-    Material btn = Material(
-      borderRadius: BorderRadius.circular(30),
-      shadowColor: Colors.black54,
-      color: Colors.lightGreen[900],
-      elevation: 5.0,
-      child: MaterialButton(
-        minWidth: 200.0,
-        height: 42.0,
-        onPressed: (){LoginRegistro.makeLogin(context, unameController.text, pwordController.text);},
-        //color: Colors.lightGreen[900],
-        child: Text("LOGIN", style: TextStyle(color: Colors.white,),),
-      ),
-    );
-
-    return ListView(
-      shrinkWrap: true,
-      padding: EdgeInsets.all(20),
-      children: <Widget>[
-        uname,
-        SizedBox(height: 8),
-        pword,
-        SizedBox(height: 24),
-        btn,
-      ],
-    );
-  }
 }
