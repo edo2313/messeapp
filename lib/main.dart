@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
-      home: new Scaffold(body: new MyHomePage(title: 'MESSEAPP')),
+      home: MyHomePage(title: 'MESSEAPP'),
     );
   }
 }
@@ -25,17 +25,21 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<MyHomePage> {
   int index = 0;
+
+  Registro _registro;
+  Orari _orari;
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text(widget.title))
+        title: Center(child: Text(widget.title)),
       ),
       body: buildBody(context),
       bottomNavigationBar: BottomNavigationBar(
@@ -54,9 +58,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget buildBody (BuildContext context) {
     switch (index){
       case 0:
-        return LoginRegistro();
+        return (_registro ??= Registro(this));
       case 2:
-        return Orari();
+        return (_orari ??= Orari());
       default:
         return Center(child: Text("PAGINA"),);
     }

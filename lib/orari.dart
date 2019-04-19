@@ -2,7 +2,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class Orari extends StatefulWidget{
-
   // funzione per caricare i link delle immagini
   Future<Map<String, String>> loadLinks () async {
     Map<String,MapEntry<String, String>> classCode = Map();
