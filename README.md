@@ -2,6 +2,8 @@
 
 App Messedaglia
 
+[![Build Status](https://travis-ci.com/edo-2313/messeapp.svg?branch=master)](https://travis-ci.com/edo-2313/messeapp)
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
