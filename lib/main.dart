@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:messeapp/loginRegistro.dart';
+import 'package:messeapp/registro/registro.dart';
 import 'package:messeapp/orari.dart';
 
 void main(){

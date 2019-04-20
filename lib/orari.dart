@@ -37,7 +37,7 @@ class Orari extends StatefulWidget{
 class OrariState extends State<Orari> {
   String link;
   String cls;
-  Map<String, String> orari;
+  static Map<String, String> orari;
 
   @override
   Widget build(BuildContext context) {
