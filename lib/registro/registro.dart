@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:messeapp/main.dart';
 import 'package:messeapp/registro/loginRegistro.dart';
 import 'package:messeapp/registro/votiRegistro.dart';
+import 'package:preferences/preferences.dart';
 
 const String API_KEY = "Tg1NWEwNGIgIC0K";
+const String USERNAME_KEY = 'CVVS_UNAME';
+const String PASSWORD_KEY = 'CVVS_PWORD';
+const String AUTO_LOGIN_KEY = 'REG_AUTO_LOGIN';
 
 class Registro extends StatefulWidget {
   final MyHomePageState home;
@@ -34,10 +38,14 @@ class RegistroState extends State<Registro> with SingleTickerProviderStateMixin{
     super.dispose();
   }
 
-  void log (String token){
+  Future<void> log (String token, String username, String password) async {
     if (token == null) return;
+    await PrefService.setString(USERNAME_KEY, username);
+    await PrefService.setString(PASSWORD_KEY, password);
+
     setState(() {
       RegistroState.token = token;
+      RegistroState.username = username;
       logged = true;
     });
   }

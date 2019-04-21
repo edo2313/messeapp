@@ -4,11 +4,16 @@ import 'package:dynamic_theme/dynamic_theme.dart';
 
 import 'package:messeapp/registro/registro.dart';
 import 'package:messeapp/orari.dart';
+import 'package:messeapp/splashScreen.dart';
 import 'package:messeapp/settings.dart';
 import 'package:messeapp/globals.dart';
 
-void main() async {
+Future<void> main() async {
   await PrefService.init(prefix: 'pref_');
+  SplashScreen.toLoad.forEach((f) => f().then((x) {
+    SplashScreen.state.addEnd();
+    if (SplashScreen.state.end == SplashScreen.toLoad.length) MyHomePage.state.endSplash();
+  }));
   runApp(MyApp());
 }
 
@@ -40,7 +45,7 @@ class MyApp extends StatelessWidget {
       900: Color.fromRGBO(245, 183, 69, 1),
     };
     return new DynamicTheme(
-        defaultBrightness: PrefService.getBool('darkmode')
+        defaultBrightness: (PrefService.getBool('darkmode')??false)
             ? Brightness.dark
             : Brightness.light,
         data: (brightness) => new ThemeData(
@@ -61,19 +66,25 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
+  static MyHomePageState state;
 
   @override
-  MyHomePageState createState() => MyHomePageState();
+  MyHomePageState createState() => state = MyHomePageState();
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  //int index = 0;
+  int index = 0;
+  bool _splash = true;
 
   Registro _registro;
   Orari _orari;
 
+  void endSplash () => setState(() => _splash = false);
+
+
   @override
   Widget build(BuildContext context) {
+    if (_splash) return SplashScreen();
     return Scaffold(
       appBar: AppBar(
         leading: ImageIcon(AssetImage('assets/logomesse.png')),

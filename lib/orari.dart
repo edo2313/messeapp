@@ -1,9 +1,14 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:messeapp/main.dart';
+import 'dart:convert';
+import 'package:preferences/preferences.dart';
+
+const DATA_KEY = 'ORARI_DATA';
 
 class Orari extends StatefulWidget{
   // funzione per caricare i link delle immagini
-  Future<Map<String, String>> loadLinks () async {
+  static Future<void> loadLinks () async {
     Map<String,MapEntry<String, String>> classCode = Map();
     String currentyear =  (DateTime.now().year-1).toString()+'-'+DateTime.now().year.toString().substring(2,4); //Prende dinamicamente l'anno attuale per cambiare il link
     http.Response r = await http.get('https://www.messedaglia.gov.it/images/stories/$currentyear/orario/_ressource.js');
@@ -26,7 +31,11 @@ class Orari extends StatefulWidget{
       List<String> split = str.split(',');
       classCode.update(split[0].substring(1,split[0].length-1), (e) => MapEntry(e.key, 'https://www.messedaglia.gov.it/images/stories/$currentyear/orario/classi/${split[2].substring(1,split[2].length-1)}.png'));
     }
-    return Map<String,String>.fromEntries(classCode.values);
+
+    // TODO: la funzione non deve ritornare nulla, deve salvare i dati sul db locale (o sharedPreferences come stringa json)
+
+    String json = jsonEncode(Map<String,String>.fromEntries(classCode.values));
+    PrefService.setString(DATA_KEY, json);
   }
 
   @override
@@ -37,17 +46,11 @@ class Orari extends StatefulWidget{
 class OrariState extends State<Orari> {
   String link;
   String cls;
-  static Map<String, String> orari;
+  static Map<String, dynamic> orari;
 
   @override
   Widget build(BuildContext context) {
-    if (orari == null){
-      widget.loadLinks().then((m) {
-        orari = m;
-        setState(() {});
-      });
-      return Center(child: new CircularProgressIndicator(),);  // provvisorio
-    }
+    if (orari == null) orari = jsonDecode(PrefService.getString(DATA_KEY));
     DropdownButton<String> picker = DropdownButton( // TODO: cambiare lo stile
       value: cls,
       items: orari.keys.map((str) => DropdownMenuItem(child: Text(str), value: str)).toList(),
