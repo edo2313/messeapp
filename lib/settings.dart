@@ -22,7 +22,7 @@ class Settings extends StatelessWidget {
           'Pagina iniziale',
           'start_page',
           defaultVal: 'Registro',
-          values: ['Registro', 'Calendario', 'Orari'],
+          values: ['Mantieni l\'ultima pagina aperta', 'Registro', 'Calendario', 'Orari'],
         ),
         PreferenceTitle('Personalizzazione'),
         SwitchPreference(

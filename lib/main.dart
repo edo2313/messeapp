@@ -12,7 +12,7 @@ Future<void> main() async {
   await PrefService.init(prefix: 'pref_');
   SplashScreen.toLoad.forEach((f) => f().then((x) {
     SplashScreen.state.addEnd();
-    if (SplashScreen.state.end == SplashScreen.toLoad.length) MyHomePage.state.endSplash();
+    if (SplashScreen.state.end == SplashScreen.toLoad.length) Glob.showSplash = false;
   }));
   runApp(MyApp());
 }
@@ -22,6 +22,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (PrefService.getString('start_page')) {
+      case 'Mantieni l\'ultima pagina aperta':
+        Glob.index = PrefService.getInt('last_opened_page') ?? 0;
+        break;
       case 'Registro':
         Glob.index = 0;
         break;
@@ -74,48 +77,21 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   int index = 0;
-  bool _splash = true;
 
   Registro _registro;
   Orari _orari;
 
-  void endSplash () => setState(() => _splash = false);
-
+  @override
+  void initState() {
+    Glob.splashCallback = () => setState((){});
+    Glob.indexCallback = () => setState((){});
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (_splash) return SplashScreen();
-    return Scaffold(
-      appBar: AppBar(
-        leading: ImageIcon(AssetImage('assets/logomesse.png')),
-        title: Text('MesseApp'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Settings()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: buildBody(context),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: Glob.index,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.vpn_key), title: Text('Registro')),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today), title: Text('Calendario')),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.access_time), title: Text('Orari'))
-        ],
-        onTap: (int i) => setState(() => Glob.index = i),
-      ),
-    );
+    if (Glob.showSplash) return SplashScreen();
+    else return buildBody(context);
   }
 
   Widget buildBody(BuildContext context) {
@@ -125,8 +101,11 @@ class MyHomePageState extends State<MyHomePage> {
       case 2:
         return (_orari ??= Orari());
       default:
-        return Center(
-          child: Text("PAGINA"),
+        return Scaffold(
+          body: Center(
+            child: Text("PAGINA"),
+          ),
+          bottomNavigationBar: Glob.bottomNavigationBar,
         );
     }
   }

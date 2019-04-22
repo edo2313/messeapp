@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:messeapp/registro/registro.dart';
 import 'package:messeapp/main.dart';
+import 'package:messeapp/globals.dart';
 import 'package:messeapp/registro/votiRegistro.dart';
 import 'package:preferences/preferences.dart';
 
@@ -15,7 +16,7 @@ class LoginRegistro extends StatefulWidget{
 
   /// funzione per prelevare il 'token' da utilizzare per mantenere la sessione
   /// controllo di username e password
-  static Future<String> makeLogin ([BuildContext context, String username, String password, bool wait = false]) async {
+  static Future<bool> makeLogin ([BuildContext context, String username, String password, bool wait = false]) async {
     username ??= PrefService.getString(USERNAME_KEY);
     password ??= PrefService.getString(PASSWORD_KEY);
     Map<String, String> head = {
@@ -28,14 +29,14 @@ class LoginRegistro extends StatefulWidget{
     try{
       r = await http.post('https://web.spaggiari.eu/rest/v1/auth/login', headers: head, body: data);
     } catch(SocketException){
-      if (context == null) return null;
+      if (context == null) return false;
       Scaffold.of(context).showSnackBar(
           SnackBar(
             content: Text("Controlla la connessione ad internet"),
             //action: SnackBarAction(label: "RIPROVA", onPressed: () {}),
           )
       );
-      return null;
+      return false;
     }
     var json = jsonDecode(r.body);
 
@@ -44,7 +45,7 @@ class LoginRegistro extends StatefulWidget{
       Scaffold.of(context).showSnackBar(
         SnackBar(content: Text(json["info"]))
       );
-      return null;
+      return false;
     }
     if (context != null) {
       Scaffold.of(context).showSnackBar(
@@ -53,11 +54,11 @@ class LoginRegistro extends StatefulWidget{
           ))
       );
     }
-    String token = json["token"];
+    Glob.token = json["token"];
 
-    if (wait) await MarksRegistro.loadMarks(token, username);
-    else MarksRegistro.loadMarks(token, username);
-    return token;
+    if (wait) await MarksRegistro.loadMarks(Glob.token, username);
+    else MarksRegistro.loadMarks(Glob.token, username);
+    return true;
   }
 
   @override
@@ -78,19 +79,6 @@ class LoginRegistroState extends State<LoginRegistro> {
     _unameController.text = PrefService.get(USERNAME_KEY) ?? '';
     _pwordController.text = PrefService.get(PASSWORD_KEY) ?? '';
     _autoLogin = PrefService.get(AUTO_LOGIN_KEY) ?? true;
-
-    if (_autoLogin){
-      if (_unameController.text != '' && _pwordController.text != '' && !logging) {
-        logging = true;
-        String username = _unameController.text;
-        String password = _pwordController.text;
-        Future<String> token = LoginRegistro.makeLogin(context, username, password);
-        token.then((str) {
-          logging = false;
-          widget.parent.log(str, username, password);
-        });
-      }
-    }
 
     super.initState();
   }
@@ -142,11 +130,15 @@ class LoginRegistroState extends State<LoginRegistro> {
           logging = true;
           String username = _unameController.text;
           String password = _pwordController.text;
-          Future<String> token = LoginRegistro.makeLogin(context, username, password, true);
-          token.then((str) {
-            logging = false;
-            widget.parent.log(str, username, password);
-          });
+          if (username == PrefService.getString(USERNAME_KEY) && password == PrefService.getString(PASSWORD_KEY))
+            widget.parent.log(null, null, saveCredentials: false);
+          else {
+            Future<bool> token = LoginRegistro.makeLogin(context, username, password, true);
+            token.then((ok) {
+              logging = false;
+              if (ok) widget.parent.log(username, password);
+            });
+          }
         },
         //color: Colors.lightGreen[900],
         child: Text("LOGIN", style: TextStyle(color: Colors.white,),),

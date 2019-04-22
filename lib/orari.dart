@@ -1,6 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:messeapp/main.dart';
+import 'package:messeapp/globals.dart';
+import 'package:messeapp/settings.dart';
 import 'dart:convert';
 import 'package:preferences/preferences.dart';
 
@@ -47,7 +49,7 @@ class OrariState extends State<Orari> {
   String link;
   String cls;
   static Map<String, dynamic> orari;
-
+  
   @override
   Widget build(BuildContext context) {
     if (orari == null) orari = jsonDecode(PrefService.getString(DATA_KEY));
@@ -61,8 +63,25 @@ class OrariState extends State<Orari> {
       isExpanded: true,
       hint: Text('Scegli la classe'),
     );
-    return Column(
-      children: <Widget>[picker, link!=null?Image.network(link):Container()],
+    return Scaffold(
+      appBar: AppBar(
+        leading: ImageIcon(AssetImage('assets/logomesse.png')),
+        title: Text('MesseApp'),
+        bottom: PreferredSize(child: Padding(child: picker, padding: EdgeInsets.symmetric(horizontal: 10)), preferredSize: Size.fromHeight(48.0)),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Settings()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: link!=null?Image.network(link):Container(),
+      bottomNavigationBar: Glob.bottomNavigationBar,
     );
   }
 

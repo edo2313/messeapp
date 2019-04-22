@@ -9,10 +9,6 @@ import 'dart:convert';
 const String DATA_KEY = 'MARKS_DATA';
 
 class MarksRegistro extends StatefulWidget {
-  final String token;
-  final String username;
-
-  MarksRegistro (this.token, this.username);
 
   static Future<List<Subject>> loadMarks (String token, String username) async {
     Map head = <String, String>{
@@ -198,7 +194,9 @@ class Mark extends ListTile with Comparable<Mark>{
           title: Text(date.replaceAll('-', '/')), // TODO: invertire la data
           subtitle: Text(info),
           trailing: CircleAvatar(
-            backgroundColor: Colors.green,  // TODO: cambiare il colore in base al voto
+            backgroundColor: decimalValue!=null
+                ? decimalValue<6 ? Colors.red : Colors.green
+                : Colors.blue,
             child: Text(
               displayValue,
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
