@@ -65,8 +65,8 @@ class OrariState extends State<Orari> {
     );
     return Scaffold(
       appBar: AppBar(
-        leading: ImageIcon(AssetImage('assets/logomesse.png')),
-        title: Text('MesseApp'),
+        leading: Glob.appbarLogo,
+        title: Glob.appbarTitle,
         bottom: PreferredSize(child: Padding(child: picker, padding: EdgeInsets.symmetric(horizontal: 10)), preferredSize: Size.fromHeight(48.0)),
         actions: <Widget>[
           IconButton(

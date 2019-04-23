@@ -40,4 +40,8 @@ class Glob {
         items: navigationBarItems,
         onTap: (int i) => PrefService.setInt('last_opened_page', index = i),
       );
+
+  //Globali per la AppBar
+  static ImageIcon appbarLogo = ImageIcon(AssetImage('assets/logomesse.png'));
+  static Text appbarTitle = Text('MesseApp');
 }

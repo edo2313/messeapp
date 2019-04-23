@@ -66,8 +66,8 @@ class RegistroState extends State<Registro> with SingleTickerProviderStateMixin{
     );
     return Scaffold(
       appBar: AppBar(
-        leading: ImageIcon(AssetImage('assets/logomesse.png')),
-        title: Text('MesseApp'),
+        leading: Glob.appbarLogo,
+        title: Glob.appbarTitle,
         bottom: logged? bar:null,
         actions: <Widget>[
           IconButton(
