@@ -13,7 +13,7 @@ addons:
       - fonts-droid
 before_script:
   - git clone --single-branch --branch stable https://github.com/flutter/flutter.git $HOME/flutter
-  - ./travisbuild.sh
+  - bash ./travisbuild.sh
   - export ANDROID_HOME=$HOME/android-sdk
   - export PATH=$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH
   - flutter doctor
