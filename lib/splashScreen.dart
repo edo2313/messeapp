@@ -22,7 +22,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void initState() {
-    Orari.loadLinks();
     super.initState();
   }
 

@@ -1,7 +1,7 @@
 #!/bin/bash
-wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
+wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
 mkdir android-sdk
-unzip -qq sdk-tools-linux-3859397.zip -d $HOME/android-sdk
+unzip -qq sdk-tools-linux-4333796.zip -d $HOME/android-sdk
 export ANDROID_HOME=$HOME/android-sdk
 export PATH=$HOME/android-sdk/tools/bin:$PATH
 mkdir -p /home/travis/.android # silence sdkmanager warning
@@ -15,8 +15,8 @@ echo y | sdkmanager "extras;android;m2repository" >/dev/null
 echo y | sdkmanager "extras;google;m2repository" >/dev/null
 echo y | sdkmanager "patcher;v4" >/dev/null
 sdkmanager --list
-wget http://services.gradle.org/distributions/gradle-4.1-bin.zip
-unzip -qq gradle-4.1-bin.zip -d $HOME/gradle-4.1
-export GRADLE_HOME=$HOME/gradle-4.1
+wget http://services.gradle.org/distributions/gradle-4.10.2-bin.zip
+unzip -qq gradle-4.10.2-bin.zip -d $HOME/gradle-4.10.2
+export GRADLE_HOME=$HOME/gradle-4.10.2
 export PATH=$GRADLE_HOME/bin:$PATH
 gradle -v
