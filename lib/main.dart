@@ -35,24 +35,12 @@ class MyApp extends StatelessWidget {
         Glob.index = 2;
         break;
     }
-    Map<int, Color> color = {
-      50: Color.fromRGBO(245, 183, 69, .1),
-      100: Color.fromRGBO(245, 183, 69, .2),
-      200: Color.fromRGBO(245, 183, 69, .3),
-      300: Color.fromRGBO(245, 183, 69, .4),
-      400: Color.fromRGBO(245, 183, 69, .5),
-      500: Color.fromRGBO(245, 183, 69, .6),
-      600: Color.fromRGBO(245, 183, 69, .7),
-      700: Color.fromRGBO(245, 183, 69, .8),
-      800: Color.fromRGBO(245, 183, 69, .9),
-      900: Color.fromRGBO(245, 183, 69, 1),
-    };
     return new DynamicTheme(
         defaultBrightness: (PrefService.getBool('darkmode')??false)
             ? Brightness.dark
             : Brightness.light,
         data: (brightness) => new ThemeData(
-              primarySwatch: MaterialColor(0xFFF5B745, color),
+              primarySwatch: Glob.primarySwatch,
               appBarTheme: AppBarTheme(color: Color(0xFFF5B745)),
               brightness: brightness,
             ),

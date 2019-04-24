@@ -5,6 +5,7 @@ import 'package:messeapp/registro/registro.dart';
 import 'package:messeapp/main.dart';
 import 'package:messeapp/globals.dart';
 import 'package:messeapp/registro/votiRegistro.dart';
+import 'package:messeapp/registro/lezioniRegistro.dart';
 import 'package:preferences/preferences.dart';
 
 
@@ -16,7 +17,7 @@ class LoginRegistro extends StatefulWidget{
 
   /// funzione per prelevare il 'token' da utilizzare per mantenere la sessione
   /// controllo di username e password
-  static Future<bool> makeLogin ([BuildContext context, String username, String password, bool wait = false]) async {
+  static Future<bool> makeLogin ([BuildContext context, String username, String password]) async {
     username ??= PrefService.getString(USERNAME_KEY);
     password ??= PrefService.getString(PASSWORD_KEY);
     Map<String, String> head = {
@@ -56,8 +57,8 @@ class LoginRegistro extends StatefulWidget{
     }
     Glob.token = json["token"];
 
-    if (wait) await MarksRegistro.loadMarks(Glob.token, username);
-    else MarksRegistro.loadMarks(Glob.token, username);
+    await MarksRegistro.loadMarks(Glob.token, username);
+    await LessonsRegistro.loadLessons(Glob.token, username);
     return true;
   }
 
@@ -133,7 +134,7 @@ class LoginRegistroState extends State<LoginRegistro> {
           if (username == PrefService.getString(USERNAME_KEY) && password == PrefService.getString(PASSWORD_KEY))
             widget.parent.log(null, null, saveCredentials: false);
           else {
-            Future<bool> token = LoginRegistro.makeLogin(context, username, password, true);
+            Future<bool> token = LoginRegistro.makeLogin(context, username, password);
             token.then((ok) {
               logging = false;
               if (ok) widget.parent.log(username, password);

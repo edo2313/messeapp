@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:messeapp/registro/registro.dart';
 import 'package:preferences/preferences.dart';
-import 'package:messeapp/main.dart';
+import 'package:messeapp/globals.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -10,7 +10,7 @@ const String DATA_KEY = 'MARKS_DATA';
 
 class MarksRegistro extends StatefulWidget {
 
-  static Future<List<Subject>> loadMarks (String token, String username) async {
+  static Future<List<Period>> loadMarks (String token, String username) async {
     Map head = <String, String>{
       "Z-Dev-Apikey": API_KEY,
       "Content-Type": "application/json",
@@ -22,24 +22,32 @@ class MarksRegistro extends StatefulWidget {
     http.Response r = await http.get('https://web.spaggiari.eu/rest/v1/students/${username.substring(1, username.length-1)}/grades2', headers: head);
     print(r.body);
     List json = jsonDecode(r.body)['grades'];
-    Set<Subject> subjects = Set();
+    Map<int, Period> periods = Map<int, Period>();
     Subject last;
     for (Map mark in json){
-      if (last == null || mark['subjectCode'] != last.subjectCode)
-        last = Subject(mark['subjectCode'], mark['subjectDesc']);
-        if (!subjects.add(last))
-          for (Subject s in subjects)
-            if (s == mark['subjectCode']){
+      int periodCode = mark['periodPos'];
+      String subjectCode = mark['subjectCode']+periodCode.toString();
+      Period p = (periods[periodCode] ??= Period(mark['periodDesc']));
+      if (last == null || subjectCode != last.subjectCode)
+        last = Subject(subjectCode, mark['subjectDesc']);
+        if (!p.subjects.add(last))
+          for (Subject s in p.subjects)
+            if (s == subjectCode){
               last = s;
               break;
             }
       last.addMark(Mark(mark['decimalValue']?.toDouble(), mark['displayValue'], mark['notesForFamily'], mark['evtDate']));
     }
-    subjects.forEach((s) => s.sort());
+    for (Period p in periods.values) p.subjects.forEach((s) => s.sort());
     // FIXME: mancano delle materie!
 
-    String encodedJson = jsonEncode(subjects.toList(),
+    String encodedJson = jsonEncode(periods.values.toList(),
         toEncodable: (obj) {
+          if (obj is Period)
+            return {
+              'period': obj.label,
+              'subjects': obj.subjects.toList()
+            };
           if (obj is Subject)
             return {
               'subjectCode': obj.subjectCode,
@@ -60,13 +68,13 @@ class MarksRegistro extends StatefulWidget {
 
     await PrefService.setString(DATA_KEY, encodedJson);
 
-    return subjects.toList();
+    return periods.values.toList();
   }
-  static Future<List<Subject>> loadMarksFromDb () async {
-    List rawSubjects = jsonDecode(PrefService.getString(DATA_KEY)??'[]');
-    List<Subject> subjects = List<Subject>();
-    rawSubjects.forEach((sbj) => subjects.add(Subject.fromMap(sbj)));
-    return subjects;
+  static Future<List<Period>> loadMarksFromDb () async {
+    List rawPeriods = jsonDecode(PrefService.getString(DATA_KEY)??'[]');
+    List<Period> periods = List<Period>();
+    rawPeriods.forEach((p) => periods.add(Period.fromMap(p)));
+    return periods;
   }
 
   @override
@@ -76,8 +84,9 @@ class MarksRegistro extends StatefulWidget {
 
 class MarksRegistroState extends State<MarksRegistro> {
   static bool loaded = false;
-  static List<Subject> subjects;
-  static List<ExpansionPanel> expPaneList;
+  static List<Period> periods;
+  static int periodIndex = 0;
+  static List<List<ExpansionPanel>> expPaneLists = [];
 
   @override
   void initState() {
@@ -85,8 +94,8 @@ class MarksRegistroState extends State<MarksRegistro> {
       MarksRegistro.loadMarksFromDb().then((list) {
         if (list == null) return;
         setState(() {
-          subjects = list;
-          expPaneList = subjects.map((s) => s.getExpansionPanel()).toList();
+          periods = list;
+          for (Period p in periods) expPaneLists.add(p.subjects.map((s) => s.getExpansionPanel()).toList());
           loaded = true;
         });
       });
@@ -96,18 +105,63 @@ class MarksRegistroState extends State<MarksRegistro> {
   @override
   Widget build(BuildContext context) {
     if (!loaded) return Center(child: CircularProgressIndicator());
-    return SingleChildScrollView(
-        child: Container(
-            padding: EdgeInsets.all(10),
-            child: ExpansionPanelList(
-              expansionCallback: (i, exp) => setState(() => expPaneList[i] = (subjects[i]..switchExpanded()).getExpansionPanel()),  // FIXME: non è fluido
-              children: expPaneList,
-            )
-        )
-    );
+    List<Expanded> periodsViews = [];
+    for (int i=0; i<periods.length; i++){
+      periodsViews.add(
+          Expanded(
+              child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: MaterialButton(  // TODO: modificare lo stile
+                    disabledTextColor: Theme.of(context).brightness == Brightness.light
+                        ? Colors.black
+                        : Colors.white,
+                    textColor: Theme.of(context).brightness == Brightness.light
+                        ? Colors.black38
+                        : Colors.white30,
+                    color: Glob.primarySwatch[900],
+                    onPressed: i == periodIndex
+                        ? null  // per disattivarlo
+                        : () => setState(() {periodIndex = i;}),  // TODO: animazione?
+                    child: Text(periods[i].label.toUpperCase()),
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(), 
+                        borderRadius: BorderRadius.all(Radius.circular(10))
+                    ),
+                  )
+              )
+          )
+      );
+    }
+
+    return Column(
+        children: <Widget>[
+          periodsViews.length>1 ? Row(children: periodsViews) : Container(),  // TODO: quando c'è solo il trimestre, lasciamo un pulsante o eliminiamo del tutto?
+          Expanded(
+              child: SingleChildScrollView(
+                  child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: ExpansionPanelList(
+                        expansionCallback: (i, exp) => setState(() => expPaneLists[periodIndex][i] = (periods[periodIndex].subjects.elementAt(i)..switchExpanded()).getExpansionPanel()),
+                        children: expPaneLists[periodIndex],
+                      )
+                  )
+              )
+          )
+        ],
+      );
   }
 }
 
+class Period {
+  String label;
+  final Set<Subject> subjects = Set<Subject>();
+
+  Period (this.label);
+  Period.fromMap (Map map) {
+    this.label = map['period'];
+    map['subjects'].forEach((sbj) => subjects.add(Subject.fromMap(sbj)));
+  }
+}
 
 class Subject {
   String subjectCode;

@@ -44,4 +44,21 @@ class Glob {
   // AppBar items
   static ImageIcon appbarLogo = ImageIcon(AssetImage('assets/logomesse.png'));
   static Text appbarTitle = Text('MesseApp');
+
+  // primarySwatch
+  static const MaterialColor primarySwatch = MaterialColor(
+      0xFFF5B745,
+      {
+        50: Color.fromRGBO(245, 183, 69, .1),
+        100: Color.fromRGBO(245, 183, 69, .2),
+        200: Color.fromRGBO(245, 183, 69, .3),
+        300: Color.fromRGBO(245, 183, 69, .4),
+        400: Color.fromRGBO(245, 183, 69, .5),
+        500: Color.fromRGBO(245, 183, 69, .6),
+        600: Color.fromRGBO(245, 183, 69, .7),
+        700: Color.fromRGBO(245, 183, 69, .8),
+        800: Color.fromRGBO(245, 183, 69, .9),
+        900: Color.fromRGBO(245, 183, 69, 1),
+      }
+  );
 }

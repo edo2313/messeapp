@@ -8,22 +8,15 @@ import 'package:preferences/preferences.dart';
 const DATA_KEY = 'ORARI_DATA';
 
 class Orari extends StatefulWidget {
-
-  static int currentyear=(DateTime.now().month>=8 ? DateTime.now().year : DateTime.now().year-1);
-
   // funzione per controllare se esistono orari nuovi
 
-  static Future<void> checkNewLink() async {
-    String nextyear = (currentyear+1).toString()+'-'+(currentyear+2).toString().substring(2,4);
-    final response = await http.get('https://www.messedaglia.gov.it/images/stories/$nextyear/orario/');
-    if (response.statusCode == 200) {
-      ++currentyear;
-    }
-    else if (response.statusCode == 404) {
-    }
-    else {
-      //TODO: Implementare errore e/o offline
-    }
+  static Future<int> checkNewLink() async {
+	int currentyear = DateTime.now().year;
+    String nextyear = '$currentyear-${(currentyear+1)%100}';
+    final http.Response response = await http.get('https://www.messedaglia.gov.it/images/stories/$nextyear/orario/');
+    if (response.statusCode == 200) return currentyear;
+    if (response.statusCode == 404) return currentyear-1;
+	// TODO: gestire le eccezioni
     return null;
   }
 
@@ -31,10 +24,11 @@ class Orari extends StatefulWidget {
 
   static Future<void> loadLinks() async {
     Map<String, MapEntry<String, String>> classCode = Map();
-    await checkNewLink();
-    String year = currentyear.toString()+'-'+(currentyear+1).toString().substring(2,4);
+    int currentyear = await checkNewLink();
+    if (currentyear == null) return;
+    String year = '$currentyear-${(currentyear+1)%100}';
     http.Response r = await http.get('https://www.messedaglia.gov.it/images/stories/$year/orario/_ressource.js');
-    if (r.statusCode != 200) return null;
+    if (r.statusCode != 200) return;
     List<String> lines = r.body.split('\n');
     for (String str in lines) {
       if (!str.startsWith("listeRessources")) continue;
@@ -46,7 +40,7 @@ class Orari extends StatefulWidget {
     }
 
     r = await http.get('https://www.messedaglia.gov.it/images/stories/$year/orario/_periode.js');
-    if (r.statusCode != 200) return null;
+    if (r.statusCode != 200) return;
     lines = r.body.split('\n');
     for (String str in lines) {
       if (!str.startsWith("listePeriodes")) continue;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:messeapp/orari.dart';
+import 'package:messeapp/registro/lezioniRegistro.dart';
 import 'package:messeapp/registro/loginRegistro.dart';
 
 class SplashScreen extends StatefulWidget{
