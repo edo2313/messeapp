@@ -1,20 +1,14 @@
-# messeapp
+# MesseApp
 
-App Messedaglia
+App per il Liceo Scientifico A. Messedaglia
 
-[![Build Status](https://travis-ci.com/edo-2313/messeapp.svg?branch=master)](https://travis-ci.com/edo-2313/messeapp)
+![Travis (.com)](https://img.shields.io/travis/com/edo-2313/messeapp.svg)
+![GitHub release](https://img.shields.io/github/release/edo-2313/messeapp.svg)
+![GitHub issues](https://img.shields.io/github/issues-raw/edo-2313/messeapp.svg)
 
-## Getting Started
+## L'applicazione
 
-This project is a starting point for a Flutter application.
+L'app è stata creata interamente con il framework **[Flutter](https://flutter.dev)** per renderla cross-platform.
+Liberi di contribuire al codice ed eseguire una Pull Request che verrà vista e controllata
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
-
-sas ses
