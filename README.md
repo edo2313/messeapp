@@ -3,7 +3,7 @@
 
 App per il Liceo Scientifico A. Messedaglia
 
-![Travis (.com)](https://img.shields.io/travis/com/edo-2313/messeapp.svg)
+![Travis (.com)](https://travis-ci.com/edo-2313/messeapp.svg?branch=master)
 ![GitHub release](https://img.shields.io/github/release/edo-2313/messeapp.svg)
 ![GitHub issues](https://img.shields.io/github/issues-raw/edo-2313/messeapp.svg)
 

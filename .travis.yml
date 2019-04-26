@@ -21,6 +21,13 @@ script:
   - flutter build apk
 after_success:
   - curl -X PUT -u ${OCUSER}:${OCPWD} --data-binary @"build/app/outputs/apk/release/app-release.apk" $OCURL
+deploy:
+  provider: releases
+  api_key: ${GHTOKEN}
+  file: "build/app/outputs/apk/release/app-release.apk"
+  skip_cleanup: true
+  on:
+    tags: true
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

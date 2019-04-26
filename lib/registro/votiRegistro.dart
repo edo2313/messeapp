@@ -245,7 +245,7 @@ class Mark extends ListTile with Comparable<Mark>{
   Mark (this.decimalValue, this.displayValue, this.info, String date) :
         date = DateTime.parse(date),
         super (
-          title: Text(date.replaceAll('-', '/')), // TODO: invertire la data
+          title: Text(date.split("-").reversed.toList().join("/")),
           subtitle: Text(info),
           trailing: CircleAvatar(
             backgroundColor: decimalValue!=null
