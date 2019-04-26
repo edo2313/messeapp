@@ -63,13 +63,21 @@ class Orari extends StatefulWidget {
 }
 
 class OrariState extends State<Orari> {
-  String link;
-  String cls;
+  static String cls;
+  static String link;
   static Map<String, dynamic> orari;
+
+
+  @override
+  void initState() {
+    super.initState();
+    if (orari == null) orari = jsonDecode(PrefService.getString(DATA_KEY));
+    cls ??= PrefService.getString('orari_selected_class');
+    link = orari[cls];
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (orari == null) orari = jsonDecode(PrefService.getString(DATA_KEY));
     DropdownButton<String> picker = DropdownButton(
       // TODO: cambiare lo stile
       value: cls,
@@ -78,7 +86,8 @@ class OrariState extends State<Orari> {
           .toList(),
       onChanged: (str) => setState(() {
             link = orari[str];
-            cls = str;
+            PrefService.setString('orari_selected_class', cls = str);
+
           }),
       isExpanded: true,
       hint: Text('Scegli la classe'),
