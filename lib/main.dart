@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:preferences/preferences.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
-
+import 'package:package_info/package_info.dart';
 import 'package:messeapp/registro/registro.dart';
 import 'package:messeapp/orari.dart';
 import 'package:messeapp/splashScreen.dart';
 import 'package:messeapp/settings.dart';
 import 'package:messeapp/globals.dart';
+import 'package:android_intent/android_intent.dart';
+
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   await PrefService.init(prefix: 'pref_');
+  
   SplashScreen.toLoad.forEach((f) => f().then((x) {
     SplashScreen.state.addEnd();
     if (SplashScreen.state.end == SplashScreen.toLoad.length) Glob.showSplash = false;
@@ -65,7 +69,7 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   int index = 0;
-
+  static bool updateShowed = false;
   Registro _registro;
   Orari _orari;
 
@@ -78,6 +82,46 @@ class MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    // dialog provvisorio per il testing
+    // ad ogni aggiornamento bisogna incrementare il versionName in app/build.gradle, da ripristinare alla release
+    if (!updateShowed) {
+      Future<http.Response> fr = http.get('https://raw.githubusercontent.com/edo-2313/messeapp/master/android/app/build.gradle');
+      fr.then((r) async {
+        int index = r.body.indexOf('def flutterVersionName =');
+        index = r.body.indexOf('\'', index);
+        String version = r.body.substring(
+            index + 1, r.body.indexOf('\'', index + 1));
+        String currentVersion = (await PackageInfo.fromPlatform()).version;
+        //print ((await PackageInfo.fromPlatform()).version);
+        if (version != currentVersion && !updateShowed) {
+          updateShowed = true;
+          showDialog(
+              context: context,
+              builder: (context) =>
+                  AlertDialog(
+                    title: Text('NUOVO AGGIORNAMENTO DISPONIBILE'),
+                    content: Text(
+                        'È disponibile la versione $version al posto della versione $currentVersion\n' +
+                            'La nuova versione potrebbe non essere disponibile subito dopo il commit!'),
+                    /*actions: <Widget>[
+                      MaterialButton(
+                        child: Text('AGGIORNA'),
+                        onPressed: () => AndroidIntent(
+                          action: 'android.intent.action.WEB_SEARCH',
+                          data: 'https://cloud.edo2313.tk/index.php/s/lcK6tnZcnqdKyjq',
+
+                        ).launch(),
+                      )
+                    ],*/
+                  ).build(context)
+          );
+        }
+        //version = int.parse(r.body.substring(version, r.body.indexOf('\'', version+1)));
+        //print (version);
+      });
+    }
+
     if (Glob.showSplash) return SplashScreen();
     else return buildBody(context);
   }
