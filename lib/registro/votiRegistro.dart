@@ -26,31 +26,26 @@ class MarksRegistro extends StatefulWidget {
     Subject last;
     for (Map mark in json){
       int periodCode = mark['periodPos'];
-      String subjectCode = mark['subjectCode']+periodCode.toString();
+      String subjectCode = mark['subjectCode'];
       Period p = (periods[periodCode] ??= Period(mark['periodDesc']));
-      if (last == null || subjectCode != last.subjectCode)
-        last = Subject(subjectCode, mark['subjectDesc']);
-        if (!p.subjects.add(last))
-          for (Subject s in p.subjects)
-            if (s == subjectCode){
-              last = s;
-              break;
-            }
-      last.addMark(Mark(mark['decimalValue']?.toDouble(), mark['displayValue'], mark['notesForFamily'], mark['evtDate']));
+      p.addMark(
+          Mark(mark['decimalValue']?.toDouble(), mark['displayValue'], mark['notesForFamily'], mark['evtDate']),
+          mark['subjectId'],
+          mark['subjectDesc']
+      );
     }
     for (Period p in periods.values) p.subjects.forEach((s) => s.sort());
-    // FIXME: mancano delle materie!
 
     String encodedJson = jsonEncode(periods.values.toList(),
         toEncodable: (obj) {
           if (obj is Period)
             return {
               'period': obj.label,
-              'subjects': obj.subjects.toList()
+              'subjects': obj.subjects
             };
           if (obj is Subject)
             return {
-              'subjectCode': obj.subjectCode,
+              'subjectId': obj.subjectId,
               'subjectName': obj.subjectName,
               'marks': obj.marks
             };
@@ -59,7 +54,7 @@ class MarksRegistro extends StatefulWidget {
               'decimalValue': obj.decimalValue,
               'displayValue': obj.displayValue,
               'info': obj.info,
-              'date': '${obj.date.year.toString().padLeft(4,'0')}-${obj.date.month.toString().padLeft(2,'0')}-${obj.date.day.toString().padLeft(2,'0')}'
+              'date': obj.date.day.toString().padLeft(2,'0')+'/'+obj.date.month.toString().padLeft(2,'0')+'/'+obj.date.year.toString().padLeft(4,'0')
             };
         }
     );
@@ -154,26 +149,36 @@ class MarksRegistroState extends State<MarksRegistro> {
 
 class Period {
   String label;
-  final Set<Subject> subjects = Set<Subject>();
+  final Map<int, Subject> _subjects = Map<int, Subject>();
+
+  List<Subject> get subjects => _subjects.values.toList();
 
   Period (this.label);
   Period.fromMap (Map map) {
     this.label = map['period'];
-    map['subjects'].forEach((sbj) => subjects.add(Subject.fromMap(sbj)));
+    List sbjs = map['subjects'];
+    for (int i=0; i<sbjs.length; i++)
+      _subjects[i] = Subject.fromMap(sbjs[i]);
   }
+
+  void addMark (Mark mark, int sbjId, String sbjName) {
+    Subject sbj = (_subjects[sbjId] ??= Subject(sbjId, sbjName));
+    sbj.addMark(mark);
+  }
+
 }
 
 class Subject {
-  String subjectCode;
+  int subjectId;
   String subjectName;
   List<Mark> marks = List<Mark>();
   bool _expanded = false;
   double _average;
   Widget body;
 
-  Subject (this.subjectCode, this.subjectName);
+  Subject (this.subjectId, this.subjectName);
   Subject.fromMap (Map map) {
-    subjectCode = map['subjectCode'];
+    subjectId = map['subjectId'];
     subjectName = map['subjectName'];
     map['marks'].forEach((m) => addMark(Mark.fromMap(m)));
     sort();
@@ -220,14 +225,14 @@ class Subject {
 
   @override
   bool operator == (other) {
-    if (other is Subject) return subjectCode == other.subjectCode;
-    if (other is String) return subjectCode == other;
+    if (other is Subject) return subjectId == other.subjectId;
+    if (other is int) return subjectId == other;
     return false;
   }
 
   @override
   int get hashCode {
-    return subjectCode.hashCode;
+    return subjectId.hashCode;
   }
 
   @override
@@ -245,7 +250,7 @@ class Mark extends ListTile with Comparable<Mark>{
   Mark (this.decimalValue, this.displayValue, this.info, String date) :
         date = DateTime.parse(date),
         super (
-          title: Text(date.split("-").reversed.toList().join("/")),
+          title: Text(date),
           subtitle: Text(info),
           trailing: CircleAvatar(
             backgroundColor: decimalValue!=null
@@ -259,15 +264,17 @@ class Mark extends ListTile with Comparable<Mark>{
         );
 
   Mark.fromMap (Map map) :
-      date = DateTime.parse(map['date']),
+      date = DateTime.parse(map['date'].split('/').reversed.toList().join('-')),
       decimalValue = map['decimalValue'],
       displayValue = map['displayValue'],
       info = map['info'],
       super (
-        title: Text(map['date'].replaceAll('-', '/')),
+        title: Text(map['date']),
         subtitle: Text(map['info']),
         trailing: CircleAvatar(
-            backgroundColor: Colors.green,  // TODO: cambiare il colore in base al voto
+            backgroundColor: map['decimalValue'] != null
+                ? map['decimalValue']<6 ? Colors.red : Colors.green
+                : Colors.blue,
             child: Text(
               map['displayValue'],
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
