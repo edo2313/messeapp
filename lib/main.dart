@@ -7,6 +7,7 @@ import 'package:messeapp/orari.dart';
 import 'package:messeapp/splashScreen.dart';
 import 'package:messeapp/settings.dart';
 import 'package:messeapp/globals.dart';
+import 'package:messeapp/deskEditor.dart';
 import 'package:android_intent/android_intent.dart';
 
 import 'package:http/http.dart' as http;
@@ -70,8 +71,6 @@ class MyHomePage extends StatefulWidget {
 class MyHomePageState extends State<MyHomePage> {
   int index = 0;
   static bool updateShowed = false;
-  Registro _registro;
-  Orari _orari;
 
   @override
   void initState() {
@@ -129,9 +128,24 @@ class MyHomePageState extends State<MyHomePage> {
   Widget buildBody(BuildContext context) {
     switch (Glob.index) {
       case 0:
-        return (_registro ??= Registro(this));
+        return Registro(this);
       case 2:
-        return (_orari ??= Orari());
+        return Orari();
+      case 3:
+        return Scaffold(
+          backgroundColor: Colors.grey, // per far risaltare la canvas
+          body: Center(
+              child: new Container(
+                height: 210.0,
+                width: 300.0,
+                child: new CustomPaint(
+                  painter: DeskEditor(),
+                  size: Size(300, 210), // dimensione provvisoria
+                ),
+              )
+          ),
+          bottomNavigationBar: Glob.bottomNavigationBar,
+        );
       default:
         return Scaffold(
           body: Center(
