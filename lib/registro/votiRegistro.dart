@@ -12,27 +12,29 @@ class MarksRegistro extends StatefulWidget {
 
   static Future<List<Period>> loadMarks (String token, String username) async {
     Map head = <String, String>{
-      "Z-Dev-Apikey": API_KEY,
-      "Content-Type": "application/json",
-      "User-Agent": "CVVS/std/1.7.9 Android/6.0)",
-      "Z-Auth-Token": token
+      'Z-Dev-Apikey': API_KEY,
+      'Content-Type': 'application/json',
+      'User-Agent': 'CVVS/std/1.7.9 Android/6.0)',
+      'Z-Auth-Token': token,
+      'Z-If-None-Match': PrefService.getString('marks_etag')
     };
 
     // TODO: gestire le eccezioni
     http.Response r = await http.get('https://web.spaggiari.eu/rest/v1/students/${username.substring(1, username.length-1)}/grades2', headers: head);
-    print(r.body);
+    if (r.statusCode != 200) return null;
+    PrefService.setString('marks_etag', r.headers['etag']);
     List json = jsonDecode(r.body)['grades'];
     Map<int, Period> periods = Map<int, Period>();
     Subject last;
     for (Map mark in json){
-      int periodCode = mark['periodPos'];
-      String subjectCode = mark['subjectCode'];
-      Period p = (periods[periodCode] ??= Period(mark['periodDesc']));
-      p.addMark(
-          Mark(mark['decimalValue']?.toDouble(), mark['displayValue'], mark['notesForFamily'], mark['evtDate']),
-          mark['subjectId'],
-          mark['subjectDesc']
-      );
+    int periodCode = mark['periodPos'];
+    String subjectCode = mark['subjectCode'];
+    Period p = (periods[periodCode] ??= Period(mark['periodDesc']));
+    p.addMark(
+      Mark(mark['decimalValue']?.toDouble(), mark['displayValue'], mark['notesForFamily'], mark['evtDate']),
+      mark['subjectId'],
+      mark['subjectDesc']
+    );
     }
     for (Period p in periods.values) p.subjects.forEach((s) => s.sort());
 

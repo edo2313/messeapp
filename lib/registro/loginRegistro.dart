@@ -25,7 +25,7 @@ class LoginRegistro extends StatefulWidget{
       "Content-Type": "application/json",
       "User-Agent": "CVVS/std/1.7.9 Android/6.0)"
     };
-    String data = "{\"ident\":null,\"pass\":\"$password\",\"uid\":\"$username\"}";
+    String data = '{"ident":null,"pass":"$password","uid":"$username"}';
     http.Response r;
     try{
       r = await http.post('https://web.spaggiari.eu/rest/v1/auth/login', headers: head, body: data);
