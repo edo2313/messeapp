@@ -137,12 +137,10 @@ class MarksRegistroState extends State<MarksRegistro> {
           periodsViews.length>1 ? Row(children: periodsViews) : Container(),  // TODO: quando c'è solo il trimestre, lasciamo un pulsante o eliminiamo del tutto?
           Expanded(
               child: SingleChildScrollView(
-                  child: Container(
-                      padding: EdgeInsets.all(10),
-                      child: ExpansionPanelList(
-                        expansionCallback: (i, exp) => setState(() => expPaneLists[periodIndex][i] = (periods[periodIndex].subjects.elementAt(i)..switchExpanded()).getExpansionPanel()),
-                        children: expPaneLists[periodIndex],
-                      )
+                  padding: EdgeInsets.all(10),
+                  child: ExpansionPanelList(
+                    expansionCallback: (i, exp) => setState(() => expPaneLists[periodIndex][i] = (periods[periodIndex].subjects.elementAt(i)..switchExpanded()).getExpansionPanel()),
+                    children: expPaneLists[periodIndex],
                   )
               )
           )

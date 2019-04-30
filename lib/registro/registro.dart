@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:messeapp/main.dart';
 import 'package:messeapp/registro/loginRegistro.dart';
 import 'package:messeapp/registro/votiRegistro.dart';
+import 'package:messeapp/registro/bachecaRegistro.dart';
 import 'package:messeapp/settings.dart';
 import 'package:messeapp/globals.dart';
 import 'package:preferences/preferences.dart';
@@ -29,7 +30,7 @@ class RegistroState extends State<Registro> with SingleTickerProviderStateMixin{
   @override
   void initState() {
     super.initState();
-    _controller = TabController(vsync: this, length: 3);
+    _controller = TabController(vsync: this, length: 4);
     bool autoLogin = PrefService.get(AUTO_LOGIN_KEY) ?? true;
 
     if (autoLogin)
@@ -58,11 +59,11 @@ class RegistroState extends State<Registro> with SingleTickerProviderStateMixin{
     if (!logged) body = LoginRegistro(this);
     else body = TabBarView(
         controller: _controller,
-        children: [MarksRegistro(), Center (child: Text("LEZIONI")), Center (child: Text("AGENDA"))]
+        children: [MarksRegistro(), Center (child: Text("LEZIONI")), Center (child: Text("AGENDA")), NoticeBoardRegistro()]
     );
     TabBar bar = TabBar(
         controller: _controller,
-        tabs: [Tab(text: "VOTI"), Tab(text: "LEZIONI"), Tab(text: "AGENDA")]
+        tabs: [Tab(text: "VOTI"), Tab(text: "LEZIONI"), Tab(text: "AGENDA"), Tab(text: 'BACHECA',)]
     );
     return Scaffold(
       appBar: AppBar(
