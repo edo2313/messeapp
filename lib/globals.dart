@@ -30,7 +30,9 @@ class Glob {
     BottomNavigationBarItem(
         icon: Icon(Icons.calendar_today), title: Text('Calendario')),
     BottomNavigationBarItem(
-        icon: Icon(Icons.access_time), title: Text('Orari'))
+        icon: Icon(Icons.access_time), title: Text('Orari')),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.mode_edit), title: Text('Cambio Posti')),
   ];
 
   static BottomNavigationBar get bottomNavigationBar =>
