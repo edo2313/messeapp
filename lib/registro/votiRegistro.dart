@@ -92,6 +92,7 @@ class MarksRegistroState extends State<MarksRegistro> {
       MarksRegistro.loadMarksFromDb().then((list) {
         if (list == null) return;
         setState(() {
+          periodIndex = list.length-1;
           periods = list;
           for (Period p in periods) expPaneLists.add(p.subjects.map((s) => s.getExpansionPanel()).toList());
           loaded = true;
@@ -120,7 +121,7 @@ class MarksRegistroState extends State<MarksRegistro> {
                     onPressed: i == periodIndex
                         ? null  // per disattivarlo
                         : () => setState(() {periodIndex = i;}),  // TODO: animazione?
-                    child: Text(periods[i].label.toUpperCase()),
+                    child: Text(periods[i].label.toUpperCase(), overflow: TextOverflow.ellipsis,),
                     shape: RoundedRectangleBorder(
                         side: BorderSide(), 
                         borderRadius: BorderRadius.all(Radius.circular(10))
@@ -215,7 +216,9 @@ class Subject {
           return ListTile(
               title: Text(subjectName),
               leading: CircleAvatar(
-                  backgroundColor: Colors.green,
+                  backgroundColor: _average != null
+                    ? _average<6 ? Colors.red : Colors.green
+                    : Colors.blue,
                   child: Text(
                     _average?.toStringAsFixed(1) ?? '',
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

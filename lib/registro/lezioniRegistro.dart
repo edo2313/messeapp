@@ -61,7 +61,6 @@ class LessonsRegistro extends StatefulWidget {
       last.addMark(Mark(mark['decimalValue']?.toDouble(), mark['displayValue'], mark['notesForFamily'], mark['evtDate']));
     }
     subjects.forEach((s) => s.sort());
-    // FIXME: mancano delle materie!
 
     String encodedJson = jsonEncode(subjects.toList(),
         toEncodable: (obj) {
@@ -125,7 +124,7 @@ class LessonsRegistroState extends State<LessonsRegistro> {
         child: Container(
             padding: EdgeInsets.all(10),
             child: ExpansionPanelList(
-              expansionCallback: (i, exp) => setState(() => expPaneList[i] = (subjects[i]..switchExpanded()).getExpansionPanel()),  // FIXME: non è fluido
+              expansionCallback: (i, exp) => setState(() => expPaneList[i] = (subjects[i]..switchExpanded()).getExpansionPanel()),
               children: expPaneList,
             )
         )
@@ -217,7 +216,7 @@ class Mark extends ListTile with Comparable<Mark>{
   Mark (this.decimalValue, this.displayValue, this.info, String date) :
         date = DateTime.parse(date),
         super (
-          title: Text(date.replaceAll('-', '/')), // TODO: invertire la data
+          title: Text(date.replaceAll('-', '/')),
           subtitle: Text(info),
           trailing: CircleAvatar(
               backgroundColor: decimalValue!=null
@@ -239,7 +238,7 @@ class Mark extends ListTile with Comparable<Mark>{
           title: Text(map['date'].replaceAll('-', '/')),
           subtitle: Text(map['info']),
           trailing: CircleAvatar(
-              backgroundColor: Colors.green,  // TODO: cambiare il colore in base al voto
+              backgroundColor: Colors.green,
               child: Text(
                 map['displayValue'],
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

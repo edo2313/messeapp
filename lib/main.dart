@@ -104,15 +104,15 @@ class MyHomePageState extends State<MyHomePage> {
                         'È disponibile la versione $version al posto della versione $currentVersion\n' +
                             'La nuova versione potrebbe non essere disponibile subito dopo il commit!'),
                     /*actions: <Widget>[
-                      MaterialButton(
-                        child: Text('AGGIORNA'),
-                        onPressed: () => AndroidIntent(
-                          action: 'android.intent.action.WEB_SEARCH',
-                          data: 'https://cloud.edo2313.tk/index.php/s/lcK6tnZcnqdKyjq',
+                    MaterialButton(
+                      child: Text('AGGIORNA'),
+                      onPressed: () => AndroidIntent(
+                        action: 'android.intent.action.WEB_SEARCH',
+                        data: 'https://cloud.edo2313.tk/index.php/s/lcK6tnZcnqdKyjq',
 
-                        ).launch(),
-                      )
-                    ],*/
+                      ).launch(),
+                    )
+                  ],*/
                   ).build(context)
           );
         }

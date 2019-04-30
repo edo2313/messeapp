@@ -6,6 +6,7 @@ import 'package:messeapp/main.dart';
 import 'package:messeapp/globals.dart';
 import 'package:messeapp/registro/votiRegistro.dart';
 import 'package:messeapp/registro/lezioniRegistro.dart';
+import 'package:messeapp/registro/bachecaRegistro.dart';
 import 'package:preferences/preferences.dart';
 
 
@@ -59,6 +60,7 @@ class LoginRegistro extends StatefulWidget{
 
     await MarksRegistro.loadMarks(Glob.token, username);
     await LessonsRegistro.loadLessons(Glob.token, username);
+    await NoticeBoardRegistro.loadNoticeBoard(Glob.token, username);
     return true;
   }
 
