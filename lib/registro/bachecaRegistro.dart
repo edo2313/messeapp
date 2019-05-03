@@ -2,7 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:preferences/preferences.dart';
 import 'package:messeapp/registro/registro.dart';
+import 'package:messeapp/globals.dart';
 import 'package:http/http.dart' as http;
+import 'package:android_intent/android_intent.dart';
+
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class NoticeBoardRegistro extends StatefulWidget {
 
@@ -12,7 +17,7 @@ class NoticeBoardRegistro extends StatefulWidget {
       'Content-Type': 'application/json',
       'User-Agent': 'CVVS/std/1.7.9 Android/6.0)',
       'Z-Auth-Token': token,
-      //'Z-If-None-Match': PrefService.getString('notice_board_etag')
+      'Z-If-None-Match': PrefService.getString('notice_board_etag')
     };
 
     // TODO: gestire le eccezioni
@@ -27,10 +32,9 @@ class NoticeBoardRegistro extends StatefulWidget {
       'pubDate': m['pubDT'],
       'read': m['readStatus'],
       'eventCode': m['evtCode'],
-      'valid': m['cntValidInRange'],
+      'valid': m['cntValidInRange'] && m['cntStatus']=='active',
       'contentTitle': m['cntTitle'],
-      'hasContentText': m['cntStatus']=='active',
-      'contentText': null,              // scaricabile dal link 'https://web.spaggiari.eu/rest/v1/students/$username/noticeboard/attach/$eventCode/$pubId/101'
+      'contentText': null,              // scaricabile dal link 'https://web.spaggiari.eu/rest/v1/students/$username/noticeboard/read/$eventCode/$pubId/101'
       'hasAttach': m['cntHasAttach'],
       'attachments': m['attachments']   // scaricabili dal link 'https://web.spaggiari.eu/rest/v1/students/$username/noticeboard/attach/$eventCode/$pubId/${index+1}'
     }).toList();
@@ -65,6 +69,46 @@ class NoticeBoardRegistro extends StatefulWidget {
     return jsonDecode(data);
   }
 
+  static Future<bool> downloadPdf (String eventCode, int pubId, int index) async {
+    String username = PrefService.getString('CVVS_UNAME');
+    if (username == null) return null;
+    username = username.substring(1, username.length-1);
+    http.Response r = await http.get(
+        'https://web.spaggiari.eu/rest/v1/students/$username/noticeboard/attach/$eventCode/$pubId/${index+1}',
+        headers: {
+          'Z-Dev-Apikey': API_KEY,
+          'Content-Type': 'application/json',
+          'User-Agent': 'CVVS/std/1.7.9 Android/6.0)',
+          'Z-Auth-Token': Glob.token,
+          //'Z-If-None-Match': PrefService.getString('notice_board_etag')
+        }
+    );
+    if (r.statusCode != 200) return false;
+    File f = File((await getTemporaryDirectory()).path+'/test.pdf');
+    print (f.path);
+    f.writeAsBytesSync(r.bodyBytes, flush: true);
+    await AndroidIntent(action: 'action_view', data: f.path).launch();
+    return true;
+  }
+
+  static Future<String> loadSingle (String eventCode, int pubId) async {
+    String username = PrefService.getString('CVVS_UNAME');
+    if (username == null) return null;
+    username = username.substring(1, username.length-1);
+    http.Response r = await http.post(
+        'https://web.spaggiari.eu/rest/v1/students/$username/noticeboard/read/$eventCode/$pubId/101',
+      headers: {
+        'Z-Dev-Apikey': API_KEY,
+        'Content-Type': 'application/json',
+        'User-Agent': 'CVVS/std/1.7.9 Android/6.0)',
+        'Z-Auth-Token': Glob.token,
+        //'Z-If-None-Match': PrefService.getString('notice_board_etag')
+      }
+    );
+    if (r.statusCode != 200) return null;
+    return jsonDecode(r.body)['item']['text'].trim();
+  }
+
   @override
   NoticeBoardRegistroState createState() {
     return NoticeBoardRegistroState();
@@ -73,14 +117,24 @@ class NoticeBoardRegistro extends StatefulWidget {
 
 class NoticeBoardRegistroState extends State<NoticeBoardRegistro> {
   static List _list;
-  static int _expanded;
+  static List<ExpansionPanel> _expansionPanelList;
+  static bool loading = false;
 
 
   @override
   void initState() {
     super.initState();
     if (_list == null)
-      setState(() => _list = NoticeBoardRegistro.loadNoticeBoardFromDb());
+      setState(() {
+        _list = NoticeBoardRegistro.loadNoticeBoardFromDb().where((c) => c['valid']).toList();
+        _expansionPanelList = _list.map((m) =>
+            ExpansionPanel(
+                isExpanded: false,
+                headerBuilder: (context, exp) => headerBuilder(m, context, exp),
+                body: body(m)
+            )
+        ).toList();
+      });
   }
 
 
@@ -96,24 +150,65 @@ class NoticeBoardRegistroState extends State<NoticeBoardRegistro> {
       return Center(
         child: Text('NON SONO PRESENTI COMUNICAZIONI'),
       );
-    int i = 0;
-    List expPanels = _list.map((m) =>
-        ExpansionPanel(
-            isExpanded: i++ == _expanded,
-            headerBuilder: (context, exp) => ListTile(
-              title: Text(m['contentTitle'], style: TextStyle(fontWeight: m['read'] ? FontWeight.normal : FontWeight.bold),),
-              leading: m['hasAttach'] ? Icon(Icons.file_download) : null,
-            ),
-            body: Text('qui ci va il testo della comunicazione')
-        )
-    ).toList();
     return SingleChildScrollView(
       padding: EdgeInsets.all(10),
       child: ExpansionPanelList(
-        expansionCallback: (i, exp) => setState(() => _expanded = exp ? null : i),
-        children: expPanels,
+        expansionCallback: (i, exp) {
+          if (_list[i]['contentText'] == null) {
+            loading = true;
+            NoticeBoardRegistro.loadSingle(_list[i]['eventCode'], _list[i]['pubId']).then(
+                    (str) {
+                      loading = false;
+                      _list[i]['contentText'] = str;
+                      _expansionPanelList[i] = ExpansionPanel(
+                          isExpanded: !exp,
+                          headerBuilder: (context, exp) => headerBuilder(_list[i], context, exp),
+                          body: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: body(_list[i])
+                          )
+                      );
+
+                      setState(() {});
+                    }
+            );
+          }
+
+
+          setState(() => _expansionPanelList[i] = ExpansionPanel(
+              isExpanded: !exp,
+              headerBuilder: (context, exp) => headerBuilder(_list[i], context, exp),
+              body: body(_list[i])
+          ));
+
+        },
+        children: _expansionPanelList,
       ),
     );
+  }
+
+  Widget headerBuilder (Map m, BuildContext context, bool exp) =>
+    ListTile(
+      contentPadding: EdgeInsets.all(10),
+      title: Text(
+        m['contentTitle'],
+        maxLines: exp ? null : 2,
+        overflow: exp ? null : TextOverflow.ellipsis,
+        style: TextStyle(fontWeight: m['read'] ? FontWeight.normal : FontWeight.bold)
+      ),
+      leading: m['hasAttach']
+          ? GestureDetector(
+              child: Icon(Icons.file_download),
+              onTap: () {
+                for (int i=0; i<m['attachments'].length; i++) NoticeBoardRegistro.downloadPdf(m['eventCode'], m['pubId'], i);
+              },)
+          : null,
+    );
+
+  Widget body (Map m) {
+    if (m['contentText'] != null) return Text(m['contentText']);
+    if (loading) return Center(child: CircularProgressIndicator());
+    return Text('Impossibile visualizzare il contenuto della comunicazione!');
   }
 }
 

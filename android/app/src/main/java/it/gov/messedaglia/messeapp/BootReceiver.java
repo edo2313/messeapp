@@ -12,6 +12,7 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent bootIntent) {
+
         // TODO: far partire il service anche all'apertura della app
         Log.i(TAG, "Broadcast received, action: "+bootIntent.getAction());
         if (Intent.ACTION_BOOT_COMPLETED.equals(bootIntent.getAction())){
