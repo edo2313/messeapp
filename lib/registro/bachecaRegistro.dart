@@ -8,6 +8,8 @@ import 'package:android_intent/android_intent.dart';
 
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission/permission.dart';
+
 
 class NoticeBoardRegistro extends StatefulWidget {
 
@@ -69,7 +71,12 @@ class NoticeBoardRegistro extends StatefulWidget {
     return jsonDecode(data);
   }
 
-  static Future<bool> downloadPdf (String eventCode, int pubId, int index) async {
+  static Future<bool> downloadPdf (String eventCode, int pubId, int index, String filename) async {
+    print (await Permission.requestSinglePermission(PermissionName.Storage));
+    if (await Permission.requestSinglePermission(PermissionName.Storage) != PermissionStatus.allow) return false;
+
+    // TODO: notificare eventuali errori e la percentuale di caricamento
+
     String username = PrefService.getString('CVVS_UNAME');
     if (username == null) return null;
     username = username.substring(1, username.length-1);
@@ -80,14 +87,14 @@ class NoticeBoardRegistro extends StatefulWidget {
           'Content-Type': 'application/json',
           'User-Agent': 'CVVS/std/1.7.9 Android/6.0)',
           'Z-Auth-Token': Glob.token,
-          //'Z-If-None-Match': PrefService.getString('notice_board_etag')
         }
     );
     if (r.statusCode != 200) return false;
-    File f = File((await getTemporaryDirectory()).path+'/test.pdf');
-    print (f.path);
+    File f = File((await getExternalStorageDirectory()).path+'/messeapp/notices/$filename');
+    f.createSync(recursive: true);
     f.writeAsBytesSync(r.bodyBytes, flush: true);
-    await AndroidIntent(action: 'action_view', data: f.path).launch();
+    print (f.uri.toString());
+    await AndroidIntent(action: 'action_view', data: f.uri.toString()).launch();
     return true;
   }
 
@@ -200,7 +207,7 @@ class NoticeBoardRegistroState extends State<NoticeBoardRegistro> {
           ? GestureDetector(
               child: Icon(Icons.file_download),
               onTap: () {
-                for (int i=0; i<m['attachments'].length; i++) NoticeBoardRegistro.downloadPdf(m['eventCode'], m['pubId'], i);
+                for (int i=0; i<m['attachments'].length; i++) NoticeBoardRegistro.downloadPdf(m['eventCode'], m['pubId'], i, m['attachments'][i]['fileName']);
               },)
           : null,
     );
