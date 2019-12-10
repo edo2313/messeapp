@@ -13,6 +13,9 @@ import 'package:android_intent/android_intent.dart';
 import 'package:http/http.dart' as http;
 
 Future<void> main() async {
+  
+  WidgetsFlutterBinding.ensureInitialized();
+  
   await PrefService.init(prefix: 'pref_');
   
   SplashScreen.toLoad.forEach((f) => f().then((x) {
